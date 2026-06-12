@@ -6,9 +6,20 @@ def cook(scriptOp):
     dat = op('null_face')  # cambia por tu nombre real
     
     points = {
-        'forehead_top':   10,
-        'forehead_right': 103,
-        'forehead_left':  332,
+        # Superior
+        'forehead_top_right':  103,
+        'forehead_top_left':   332,
+        # Centro superior
+        'forehead_top':         10,
+        # Medio
+        'forehead_mid_right':   67,
+        'forehead_mid_left':   297,
+        # Medio bajo
+        'forehead_low_right':  109,
+        'forehead_low_left':   338,
+        # Lateral
+        'forehead_side_right': 234,
+        'forehead_side_left':  454,
     }
     
     try:
