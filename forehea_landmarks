@@ -1,0 +1,28 @@
+import json
+
+def cook(scriptOp):
+    scriptOp.clear()
+    
+    dat = op('null_face')  # cambia por tu nombre real
+    
+    points = {
+        'forehead_top':   10,
+        'forehead_right': 103,
+        'forehead_left':  332,
+    }
+    
+    try:
+        data = json.loads(dat[0, 0].val)
+        landmarks = data["faceLandmarkResults"]["faceLandmarks"][0]
+        
+        for name, idx in points.items():
+            point = landmarks[idx]
+            scriptOp.appendChan(f'{name}_x').vals = [point['x']]
+            scriptOp.appendChan(f'{name}_y').vals = [point['y']]
+            scriptOp.appendChan(f'{name}_z').vals = [point['z']]
+        
+    except Exception as e:
+        print("ERROR:", e)
+        for name in points.keys():
+            for axis in ['x', 'y', 'z']:
+                scriptOp.appendChan(f'{name}_{axis}').vals = [0]
