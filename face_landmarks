@@ -1,0 +1,65 @@
+import json
+
+def cook(scriptOp):
+    scriptOp.clear()
+    
+    dat = op('null_face')  # cambia por tu nombre real
+    
+    points = {
+        # Contorno cara
+        'forehead_top':         10,
+        'forehead_right':       103,
+        'forehead_left':        332,
+        'cheek_right':          234,
+        'cheek_left':           454,
+        'chin':                 152,
+        # Ojo derecho
+        'reye_corner_inner':    33,
+        'reye_corner_outer':    133,
+        'reye_lid_upper':       159,
+        'reye_lid_lower':       145,
+        'reye_iris':            468,
+        # Ojo izquierdo
+        'leye_corner_inner':    362,
+        'leye_corner_outer':    263,
+        'leye_lid_upper':       386,
+        'leye_lid_lower':       374,
+        'leye_iris':            473,
+        # Cejas
+        'rbrow_inner':          70,
+        'rbrow_mid':            63,
+        'rbrow_outer':          105,
+        'lbrow_inner':          300,
+        'lbrow_mid':            293,
+        'lbrow_outer':          334,
+        # Nariz
+        'nose_bridge':          1,
+        'nose_tip':             4,
+        'nose_wing_right':      97,
+        'nose_wing_left':       326,
+        # Boca
+        'mouth_corner_right':   61,
+        'mouth_corner_left':    291,
+        'mouth_lip_upper':      13,
+        'mouth_lip_lower':      14,
+        'mouth_chin':           17,
+        # Mandíbula
+        'jaw_right':            172,
+        'jaw_left':             397,
+    }
+    
+    try:
+        data = json.loads(dat[0, 0].val)
+        landmarks = data["faceLandmarkResults"]["faceLandmarks"][0]
+        
+        for name, idx in points.items():
+            point = landmarks[idx]
+            scriptOp.appendChan(f'{name}_x').vals = [point['x']]
+            scriptOp.appendChan(f'{name}_y').vals = [point['y']]
+            scriptOp.appendChan(f'{name}_z').vals = [point['z']]
+        
+    except Exception as e:
+        print("ERROR:", e)
+        for name in points.keys():
+            for axis in ['x', 'y', 'z']:
+                scriptOp.appendChan(f'{name}_{axis}').vals = [0]
