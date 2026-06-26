@@ -1,5 +1,4 @@
 ///conetar al trasnformation matrices del face_tracking.tox
-
 import math
  
  
@@ -18,6 +17,9 @@ def onCook(scriptOp):
     rotx = scriptOp.appendChan('rotx')  # pitch
     roty = scriptOp.appendChan('roty')  # yaw
     rotz = scriptOp.appendChan('rotz')  # roll
+    posx = scriptOp.appendChan('posx')
+    posy = scriptOp.appendChan('posy')
+    posz = scriptOp.appendChan('posz')
  
     # Necesitamos la sub-matriz de rotación 3x3 (esquina superior
     # izquierda de la matriz 4x4 m00..m33)
@@ -25,6 +27,7 @@ def onCook(scriptOp):
         r00, r01, r02 = chop_in['m00'], chop_in['m01'], chop_in['m02']
         r10, r11, r12 = chop_in['m10'], chop_in['m11'], chop_in['m12']
         r20, r21, r22 = chop_in['m20'], chop_in['m21'], chop_in['m22']
+        t0, t1, t2 = chop_in['m03'], chop_in['m13'], chop_in['m23']
     except (KeyError, TypeError):
         # Todavía no hay matriz válida en la entrada (p.ej. 0 caras)
         return
@@ -52,6 +55,10 @@ def onCook(scriptOp):
         rotx[i] = pitch
         roty[i] = yaw
         rotz[i] = roll
+ 
+        posx[i] = t0[i]
+        posy[i] = t1[i]
+        posz[i] = t2[i]
  
     return
  
