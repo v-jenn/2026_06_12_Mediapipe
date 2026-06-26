@@ -1,0 +1,61 @@
+///conetar al trasnformation matrices del face_tracking.tox
+
+import math
+ 
+ 
+def onCook(scriptOp):
+    scriptOp.clear()
+ 
+    chop_in = scriptOp.inputs[0]
+ 
+    if chop_in is None or chop_in.numSamples == 0:
+        scriptOp.numSamples = 0
+        return
+ 
+    n = chop_in.numSamples
+    scriptOp.numSamples = n
+ 
+    rotx = scriptOp.appendChan('rotx')  # pitch
+    roty = scriptOp.appendChan('roty')  # yaw
+    rotz = scriptOp.appendChan('rotz')  # roll
+ 
+    # Necesitamos la sub-matriz de rotación 3x3 (esquina superior
+    # izquierda de la matriz 4x4 m00..m33)
+    try:
+        r00, r01, r02 = chop_in['m00'], chop_in['m01'], chop_in['m02']
+        r10, r11, r12 = chop_in['m10'], chop_in['m11'], chop_in['m12']
+        r20, r21, r22 = chop_in['m20'], chop_in['m21'], chop_in['m22']
+    except (KeyError, TypeError):
+        # Todavía no hay matriz válida en la entrada (p.ej. 0 caras)
+        return
+ 
+    for i in range(n):
+        a00, a01, a02 = r00[i], r01[i], r02[i]
+        a10, a11, a12 = r10[i], r11[i], r12[i]
+        a20 = r20[i]
+        a21, a22 = r21[i], r22[i]
+ 
+        # Descomposición estándar de Euler (orden Z-Y-X) de una
+        # matriz de rotación 3x3. Clamp para evitar errores de
+        # dominio por arrastre de coma flotante.
+        sy = max(-1.0, min(1.0, -a20))
+        pitch = math.degrees(math.asin(sy))
+ 
+        if abs(a20) < 0.9999:
+            yaw = math.degrees(math.atan2(a10, a00))
+            roll = math.degrees(math.atan2(a21, a22))
+        else:
+            # Gimbal lock (cabeza casi mirando recto arriba/abajo)
+            yaw = math.degrees(math.atan2(-a01, a11))
+            roll = 0.0
+ 
+        rotx[i] = pitch
+        roty[i] = yaw
+        rotz[i] = roll
+ 
+    return
+ 
+ 
+def onSetupParameters(scriptOp):
+    # No se necesitan parámetros personalizados para este Script CHOP
+    return
