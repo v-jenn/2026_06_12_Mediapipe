@@ -4,7 +4,8 @@ import math
 def cook(scriptOp):
     scriptOp.clear()
     
-    dat = op('null4')
+    dat = op('face_landmarks') #reemplaza por el nombre del dat
+    
     
     points = {
         # Inicio: mentón centro
