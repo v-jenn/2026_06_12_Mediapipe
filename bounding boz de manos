@@ -1,0 +1,45 @@
+import json
+
+def cook(scriptOp):
+    scriptOp.clear()
+    
+    dat = op('null_hand')
+    
+    PADDING_PERCENT = op('null_padding')['chan1'][0]
+    
+    try:
+        data = json.loads(dat[0, 0].val)
+        hands = data["gestureResults"]["landmarks"]
+        
+        if len(hands) == 0:
+            raise Exception("No se detectó ninguna mano")
+        
+        for i, landmarks in enumerate(hands):
+            
+            xs = [pt['x'] for pt in landmarks]
+            ys = [pt['y'] for pt in landmarks]
+            
+            min_x, max_x = min(xs), max(xs)
+            min_y, max_y = min(ys), max(ys)
+            
+            width  = max_x - min_x
+            height = max_y - min_y
+            
+            pad_x = width  * (PADDING_PERCENT / 100.0)
+            pad_y = height * (PADDING_PERCENT / 100.0)
+            
+            x1 = max(0.0, min_x - pad_x)
+            x2 = min(1.0, max_x + pad_x)
+            y1 = max(0.0, min_y - pad_y)
+            y2 = min(1.0, max_y + pad_y)
+            
+            scriptOp.appendChan(f'hand{i}_bbox_x1').vals = [x1]
+            scriptOp.appendChan(f'hand{i}_bbox_x2').vals = [x2]
+            scriptOp.appendChan(f'hand{i}_bbox_y1').vals = [y1]
+            scriptOp.appendChan(f'hand{i}_bbox_y2').vals = [y2]
+        
+    except Exception as e:
+        print("ERROR:", e)
+        for i in range(2):
+            for name in ['bbox_x1','bbox_x2','bbox_y1','bbox_y2']:
+                scriptOp.appendChan(f'hand{i}_{name}').vals = [0]
