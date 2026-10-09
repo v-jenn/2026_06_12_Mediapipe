@@ -1,0 +1,82 @@
+import json
+import math
+
+def cook(scriptOp):
+    scriptOp.clear()
+    
+    dat = op('null4')
+    
+    points = {
+        # Inicio: mentón centro
+        'contour_chin_center':       152,
+        # Subiendo lado derecho
+        'contour_chin_right':        176,
+        'contour_jaw_right':         136,
+        'contour_jaw_mid_right':     150,
+        'contour_cheek_lower_right': 172,
+        'contour_cheek_mid_right':   132,
+        'contour_cheek_upper_right': 93,
+        'contour_temple_right':      234,
+        # Frente (derecha -> izquierda)
+        'contour_forehead_right':    103,
+        'contour_forehead_center':   10,
+        'contour_forehead_left':     332,
+        # Bajando lado izquierdo
+        'contour_temple_left':       454,
+        'contour_cheek_upper_left':  323,
+        'contour_cheek_mid_left':    361,
+        'contour_cheek_lower_left':  397,
+        'contour_jaw_mid_left':      379,
+        'contour_jaw_left':          365,
+        'contour_chin_left':         400,
+        # Cierre
+        'contour_chin_center_end':   152,
+    }
+
+    OFFSET_MM = 0.0
+    FACE_WIDTH_CM = 14.5
+    TEMPLE_RIGHT = 234
+    TEMPLE_LEFT  = 454
+
+    try:
+        data = json.loads(dat[0, 0].val)
+        landmarks = data["faceLandmarkResults"]["faceLandmarks"][0]
+
+        t_right = landmarks[TEMPLE_RIGHT]
+        t_left  = landmarks[TEMPLE_LEFT]
+        face_width_norm = math.sqrt(
+            (t_left['x'] - t_right['x'])**2 +
+            (t_left['y'] - t_right['y'])**2
+        )
+        units_per_cm = face_width_norm / FACE_WIDTH_CM
+        offset_norm  = (OFFSET_MM / 10.0) * units_per_cm
+
+        cx = sum(landmarks[idx]['x'] for idx in [10, 152, 234, 454]) / 4
+        cy = sum(landmarks[idx]['y'] for idx in [10, 152, 234, 454]) / 4
+
+        for name, idx in points.items():
+            point = landmarks[idx]
+            px, py, pz = point['x'], point['y'], point['z']
+
+            dx = px - cx
+            dy = py - cy
+            dist = math.sqrt(dx**2 + dy**2)
+
+            if dist > 0:
+                nx = dx / dist
+                ny = dy / dist
+            else:
+                nx, ny = 0, 0
+
+            new_x = px + nx * offset_norm
+            new_y = py + ny * offset_norm
+
+            scriptOp.appendChan(f'{name}_x').vals = [new_x]
+            scriptOp.appendChan(f'{name}_y').vals = [new_y]
+            scriptOp.appendChan(f'{name}_z').vals = [pz]
+
+    except Exception as e:
+        print("ERROR:", e)
+        for name in points.keys():
+            for axis in ['x', 'y', 'z']:
+                scriptOp.appendChan(f'{name}_{axis}').vals = [0]
